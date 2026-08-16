@@ -3,301 +3,555 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Where does the organisation settle?</title>
+<title>P&G: how the structure moved</title>
 <style>
   :root{
-    --ink:#16181D;
-    --blue:#1B6DE0;
-    --blue-pale:#E8F0FD;
-    --paper:#F3F5F8;
-    --muted:#5B6472;
-    --line:#D9DEE6;
-    --warn:#C2410C;
+    --ink:#16181D; --blue:#1B6DE0; --pale:#E8F0FD; --paper:#F3F5F8;
+    --muted:#495260; --line:#C6CFDA; --warn:#C2410C; --warnpale:#FDF0E7; --grey:#68737F;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
-    font-family:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    font-family:"Segoe UI","Segoe UI Variable Text",system-ui,-apple-system,Tahoma,Verdana,Arial,sans-serif;
     color:var(--ink);background:#fff;
-    display:grid;
-    grid-template-columns:1fr 330px;
-    grid-template-rows:auto 1fr auto;
-    padding:26px 30px 20px;
-    column-gap:26px;row-gap:16px;
+    display:grid;grid-template-columns:1fr 300px;grid-template-rows:auto auto 1fr auto;
+    padding:16px 22px 10px;column-gap:18px;row-gap:10px;overflow:hidden;
   }
-  header{grid-column:1;grid-row:1;border-bottom:1px solid var(--line);padding-bottom:12px}
-  #stage{grid-column:1;grid-row:2}
-  .panel{grid-column:2;grid-row:1 / span 2}
-  footer{grid-column:1 / -1;grid-row:3}
-  h1{font-size:26px;font-weight:700;letter-spacing:-.015em}
-  .sub{font-size:13.5px;color:var(--muted);margin-top:5px;max-width:105ch}
-  #stage{position:relative;min-height:0;background:var(--paper);border-radius:2px;overflow:hidden}
-  canvas{display:block;width:100%;height:100%}
-  #verdict{
-    position:absolute;left:18px;top:16px;max-width:46ch;
-    background:rgba(255,255,255,.94);border-left:4px solid var(--blue);
-    padding:11px 14px;
+  header{grid-column:1/-1;grid-row:1;position:relative}
+  h1{font-size:21px;font-weight:700;letter-spacing:-.015em}
+  .sub{font-size:11.5px;color:var(--muted);margin-top:2px;max-width:100ch}
+  .views{position:absolute;right:0;top:2px;display:flex;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+  .views button{font:inherit;font-size:10px;font-weight:700;letter-spacing:.04em;background:#fff;
+    border:0;padding:6px 13px;cursor:pointer;color:var(--muted)}
+  .views button.on{background:var(--ink);color:#fff}
+
+  .timeline{grid-column:1/-1;grid-row:2;display:flex;gap:7px;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0}
+  .era{flex:1;text-align:left;background:#fff;border:1px solid var(--line);border-radius:2px;
+    padding:6px 9px;cursor:pointer;font:inherit;color:var(--ink)}
+  .era:hover{background:var(--pale);border-color:var(--blue)}
+  .era .yr{display:block;font-size:12px;font-weight:700}
+  .era .nm{display:block;font-size:9.5px;color:var(--muted);margin-top:1px;line-height:1.2}
+  .era.on{background:var(--ink);border-color:var(--ink)}
+  .era.on .yr{color:#fff} .era.on .nm{color:#C9D0DA}
+  .era.on.hot{background:var(--warn);border-color:var(--warn)}
+
+  #stage,#canvasStage{grid-column:1;grid-row:3;background:var(--paper);border-radius:3px;
+    min-height:0;overflow:hidden}
+  #stage{padding:12px 16px;display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+  #canvasStage{display:none;flex-direction:column;padding:10px 14px 12px}
+  body.pulls #stage{display:none}
+  body.pulls #canvasStage{display:flex}
+  #cvWrap{flex:1;position:relative;min-height:0}
+  #cv{display:block;width:100%;height:100%}
+
+  .bandlabel{font-size:8.5px;font-weight:700;letter-spacing:.09em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:3px}
+  .band{position:relative}
+  .row{display:flex;gap:5px}
+  .box{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:2px;padding:5px;
+    font-size:10px;font-weight:600;color:var(--muted);text-align:center;display:flex;
+    align-items:center;justify-content:center;min-height:33px;line-height:1.18;
+    animation:pop .32s cubic-bezier(.2,.8,.3,1) both}
+  .box.lead{border-color:var(--blue);border-width:2px;background:var(--pale);color:var(--blue);font-size:10.5px}
+  .box.amber{border-color:var(--warn);background:var(--warnpale);color:var(--warn);border-width:2px}
+  .box.ghost{opacity:.6;font-weight:500}
+  .centre{background:var(--ink);color:#fff;border-radius:2px;padding:7px 12px;text-align:center;
+    font-size:12px;font-weight:700;animation:pop .32s both}
+  .centre small{display:block;font-size:8.5px;font-weight:500;opacity:.72;margin-top:1px}
+  .platform{border:1.5px dashed var(--muted);border-radius:2px;padding:5px;text-align:center;
+    font-size:10px;color:var(--muted);font-weight:600;animation:pop .32s both}
+  .ailayer{border:2px solid var(--blue);border-radius:2px;padding:5px;text-align:center;
+    font-size:10px;color:var(--blue);font-weight:700;background:var(--pale);animation:pop .32s both}
+  .pnl{position:absolute;right:0;top:-1px;background:var(--blue);color:#fff;font-size:8px;
+    font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:2px;text-transform:uppercase}
+  .pnl.amber{background:var(--warn)}
+
+  .link{height:13px;position:relative}
+  .link .stem{position:absolute;left:50%;top:0;width:1.5px;height:6px;background:#9FAAB8;transform:translateX(-50%)}
+  .link .bus{position:absolute;top:6px;left:0;right:0;height:7px;display:flex}
+  .link .bus::before{content:'';position:absolute;top:0;height:1.5px;background:#9FAAB8;left:9%;right:9%}
+  .link .bus i{flex:1;position:relative}
+  .link .bus i::after{content:'';position:absolute;left:50%;top:0;width:1.5px;height:7px;
+    background:#9FAAB8;transform:translateX(-50%)}
+  .xlink{height:10px;display:flex}
+  .xlink i{flex:1;position:relative}
+  .xlink i::after{content:'';position:absolute;left:50%;top:0;width:0;height:10px;
+    border-left:1.5px dashed #9FAAB8;transform:translateX(-50%)}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* structural dimensions */
+  .dims{border-top:1px solid var(--line);padding-top:8px;margin-top:6px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .dim .dn{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .dim .dv{font-size:10px;font-weight:600;color:var(--ink);margin:2px 0 4px;min-height:13px}
+  .track{position:relative;height:7px;background:#DCE2EA;border-radius:99px;overflow:visible}
+  .fill{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--blue);
+    transition:width .5s cubic-bezier(.3,.9,.3,1)}
+  .fill.d{background:var(--warn)}
+  .prev{position:absolute;top:-3px;width:2px;height:13px;background:var(--ink);opacity:.45;
+    transition:left .5s cubic-bezier(.3,.9,.3,1)}
+  .delta{font-size:9px;font-weight:700;margin-top:3px;min-height:12px}
+
+  .note{font-size:10.5px;color:var(--ink);line-height:1.35;border-left:3px solid var(--blue);
+    padding-left:8px;margin-top:6px}
+  .note.hot{border-left-color:var(--warn)}
+  .daft{border-top:1px solid var(--line);padding-top:7px;margin-top:auto}
+  .tags{display:flex;flex-wrap:wrap;gap:4px}
+  .tag{font-size:9.5px;font-weight:600;border:1px solid var(--grey);color:var(--grey);background:#fff;
+    border-radius:99px;padding:3px 8px;line-height:1.2;animation:pop .3s both}
+  .tag.c{border-color:var(--blue);color:var(--blue)}
+  .tag.d{border-color:var(--warn);color:var(--warn)}
+  .key{font-size:8.5px;color:var(--muted);margin-top:5px}
+  .key b.c{color:var(--blue)} .key b.d{color:var(--warn)}
+  .reading{font-size:10.5px;color:var(--ink);line-height:1.35;margin-top:6px;
+    border-left:3px solid var(--muted);padding-left:8px}
+
+  .panel{grid-column:2;grid-row:3;display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto}
+  .facts{border:1px solid var(--line);border-radius:2px}
+  .fact{display:flex;justify-content:space-between;gap:8px;padding:6px 9px;
+    border-bottom:1px solid var(--line);font-size:10.5px}
+  .fact:last-child{border-bottom:none}
+  .fact b{color:var(--muted);font-weight:600;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em}
+  .fact span{text-align:right;font-weight:600}
+  .ctl label{display:block;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue)}
+  .ctl.b label{color:var(--warn)}
+  .ctl .hint{font-size:9.5px;color:var(--muted);margin:2px 0 4px;line-height:1.28}
+  input[type=range]{width:100%;height:16px}
+  .ctl.a input{accent-color:var(--blue)} .ctl.b input{accent-color:var(--warn)}
+  .ends{display:flex;justify-content:space-between;font-size:8.5px;color:var(--muted)}
+  #meterWrap{margin-top:auto;border-top:1px solid var(--line);padding-top:9px}
+  #meterWrap h2{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+  #meter{position:relative;height:8px;border-radius:99px;
+    background:linear-gradient(90deg,var(--blue) 0%,#C9D6E8 50%,var(--warn) 100%)}
+  #knob{position:absolute;top:-5px;width:18px;height:18px;border-radius:50%;background:#fff;
+    border:3px solid var(--ink);transform:translateX(-50%);left:50%}
+  #mEnds{display:flex;justify-content:space-between;font-size:8.5px;color:var(--muted);margin-top:5px}
+  #stab{font-size:10.5px;margin-top:6px;font-weight:700}
+  footer{grid-column:1/-1;grid-row:4;font-size:8.5px;color:var(--muted);
+    border-top:1px solid var(--line);padding-top:5px;line-height:1.35}
+  .legend{position:absolute;right:6px;top:6px;font-size:9px;color:var(--muted);
+    background:rgba(255,255,255,.92);padding:6px 9px;border:1px solid var(--line);border-radius:2px;line-height:1.75}
+  .legend s{display:inline-block;width:15px;height:0;border-top:2px solid var(--blue);
+    vertical-align:middle;margin-right:5px;text-decoration:none}
+  .legend s.d{border-top:2px dashed var(--warn)}
+  .legend s.p{border-top:1.5px solid #9BB4DA}
+
+  /* projector and Windows laptop heights */
+  @media (max-height:860px){
+    h1{font-size:19px} .sub{font-size:11px}
+    #stage{padding:10px 14px;gap:3px}
+    .box{min-height:29px;font-size:9.5px;padding:4px}
+    .box.lead{font-size:10px}
+    .centre{padding:6px 12px;font-size:11.5px}
+    .dims{gap:9px;padding-top:6px;margin-top:4px}
+    .note,.reading{font-size:10px}
+    .tag{font-size:9px;padding:2px 7px}
   }
-  #vTitle{font-size:14.5px;font-weight:700}
-  #vBody{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.4}
-  .panel{display:flex;flex-direction:column;gap:18px;overflow:hidden;min-height:0}
-  .ctl label{display:block;font-size:12px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--blue)}
-  .ctl .hint{font-size:11.5px;color:var(--muted);margin:3px 0 9px;line-height:1.35}
-  input[type=range]{width:100%;accent-color:var(--blue);height:20px}
-  .ends{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:2px}
-  .presets{border-top:1px solid var(--line);padding-top:16px;flex:1 1 auto;overflow-y:auto;min-height:0}
-  .presets h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:9px}
-  button{
-    display:block;width:100%;text-align:left;font:inherit;font-size:12.5px;
-    background:#fff;border:1px solid var(--line);border-radius:2px;
-    padding:9px 11px;margin-bottom:7px;cursor:pointer;color:var(--ink);
-    transition:background .12s,border-color .12s;
+  @media (max-height:740px){
+    body{padding:11px 16px 8px;row-gap:7px}
+    h1{font-size:17px} .sub{display:none}
+    .timeline{padding:6px 0} .era{padding:5px 8px}
+    .era .yr{font-size:11px} .era .nm{font-size:9px}
+    .box{min-height:26px;font-size:9px}
+    .link{height:10px} .link .stem{height:4px} .link .bus{top:4px;height:6px}
+    .link .bus i::after{height:6px}
+    .xlink{height:8px} .xlink i::after{height:8px}
+    .dims{gap:7px} .dim .dv{font-size:9px;min-height:11px}
+    .note,.reading{font-size:9.5px;line-height:1.3}
+    .key{font-size:8px}
+    .platform,.ailayer{font-size:9px;padding:4px}
   }
-  button:hover{background:var(--blue-pale);border-color:var(--blue)}
-  button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-  button.on{background:var(--blue);border-color:var(--blue);color:#fff}
-  button b{display:block;font-weight:700;margin-bottom:1px}
-  button span{font-size:11px;opacity:.78;line-height:1.3;display:block}
-  #meterWrap{border-top:1px solid var(--line);padding-top:14px;flex:0 0 auto;background:#fff}
-  #meterWrap h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:9px}
-  #meter{position:relative;height:9px;background:linear-gradient(90deg,var(--blue) 0%,#C9D6E8 50%,var(--warn) 100%);border-radius:99px}
-  #knob{position:absolute;top:-5px;width:19px;height:19px;border-radius:50%;background:#fff;border:3px solid var(--ink);transform:translateX(-50%);left:50%}
-  #meterEnds{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:7px}
-  #stability{font-size:12.5px;margin-top:11px;font-weight:700;color:var(--muted)}
-  footer{font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:9px;line-height:1.4}
-  @media (prefers-reduced-motion:reduce){#knob{transition:none}}
+  @media (max-width:1180px){
+    body{grid-template-columns:1fr 258px}
+    .dims{grid-template-columns:repeat(2,1fr);row-gap:8px}
+  }
+
+  /* middle panel: what changed + international position */
+  .mid{display:flex;gap:14px;margin-top:8px;flex:1;min-height:120px}
+  .card{border:1px solid var(--line);border-radius:2px;background:#fff;padding:9px 11px;
+    display:flex;flex-direction:column}
+  .card.chg{flex:1.25}
+  .card.pos{flex:1;min-width:230px}
+  .chgrow{display:flex;align-items:baseline;gap:7px;font-size:10.5px;padding:4px 0;
+    border-bottom:1px dotted var(--line);animation:pop .3s both}
+  .chgrow:last-child{border-bottom:none}
+  .chgrow .cl{color:var(--muted);font-weight:600;flex:0 0 33%;font-size:9.5px;
+    text-transform:uppercase;letter-spacing:.03em;line-height:1.25}
+  .chgrow .cf{color:var(--muted);flex:1;text-align:right;line-height:1.25}
+  .chgrow .ar{color:var(--blue);font-weight:700}
+  .chgrow .ct{color:var(--ink);font-weight:700;flex:1;line-height:1.25}
+  .buys{font-size:10.5px;line-height:1.35;padding:5px 0}
+  .buys b{color:var(--blue)} .buys i{color:var(--warn);font-style:normal;font-weight:700}
+  .quadwrap{display:flex;gap:6px;flex:1;min-height:96px;margin:6px 0 2px}
+  .quad{position:relative;flex:1;
+    display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+    border:1px solid var(--line)}
+  .quad div{border:1px dotted var(--line);display:flex;align-items:flex-start;justify-content:center;
+    padding-top:5px;font-size:8.5px;font-weight:700;letter-spacing:.05em;color:var(--muted);
+    text-transform:uppercase;text-align:center;line-height:1.25}
+  .dot{position:absolute;width:15px;height:15px;border-radius:50%;background:var(--warn);
+    border:3px solid #fff;box-shadow:0 0 0 1.5px var(--warn);transform:translate(-50%,50%);
+    transition:left .55s cubic-bezier(.3,.9,.3,1),bottom .55s cubic-bezier(.3,.9,.3,1);z-index:2}
+  .axl{font-size:8.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .axl.y{writing-mode:vertical-rl;transform:rotate(180deg);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;white-space:nowrap;line-height:1}
+  .posname{font-size:11px;font-weight:700;color:var(--warn);margin-top:3px}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Where does the organisation settle?</h1>
-  <p class="sub">The classical trade-off assumes standardisation and local responsiveness are substitutes: more of one means less of the other. Drag both costs down and watch whether the structure still resolves.</p>
+  <h1>P&amp;G: how the structure moved, and what it is being asked to do</h1>
+  <p class="sub">Every structure answers two pulls at once: do it once for everyone, or adapt it market by market. Watch which axis holds the profit, and watch the four structural dimensions move underneath.</p>
+  <div class="views">
+    <button id="vChart" class="on">STRUCTURE</button>
+    <button id="vPulls">THE TWO PULLS</button>
+  </div>
 </header>
 
-<div id="stage">
-    <canvas id="cv"></canvas>
-    <div id="verdict">
-      <div id="vTitle"></div>
-      <div id="vBody"></div>
-    </div>
-  </div>
+<nav class="timeline" id="timeline"></nav>
 
-  <div class="panel">
-    <div class="ctl">
-      <label for="s1">Cost of global standardisation</label>
-      <p class="hint">What it takes to run one harmonised data model and one set of algorithms across every market.</p>
-      <input type="range" id="s1" min="0" max="100" value="85">
-      <div class="ends"><span>Nearly free</span><span>Prohibitive</span></div>
-    </div>
-
-    <div class="ctl">
-      <label for="s2">Cost of local capability</label>
-      <p class="hint">What it takes to place real analytical capability inside each market rather than at the centre.</p>
-      <input type="range" id="s2" min="0" max="100" value="85">
-      <div class="ends"><span>Nearly free</span><span>Prohibitive</span></div>
-    </div>
-
-    <div class="presets">
-      <h2>Four moments in P&amp;G's structure</h2>
-      <button data-a="85" data-b="85" data-hub="Corporate|centre"><b>1990 &nbsp;·&nbsp; Organised country by country</b><span>Centre: a corporate centre over 100+ national profit centres. Both costs high, so the trade-off binds and the firm must choose.</span></button>
-      <button data-a="12" data-b="80" data-hub="Global Business|Services"><b>1999 &nbsp;·&nbsp; Organization 2005</b><span>Centre: Global Business Services, running standardised processes for everyone. Profit responsibility moves to global product teams; 13 management layers cut to 7.</span></button>
-      <button data-a="80" data-b="14" data-hub="Small corporate|group"><b>2019 &nbsp;·&nbsp; Sector Business Units</b><span>Centre: a deliberately small corporate group. Focus and Enterprise markets split, and about 60% of corporate work pushed out to the units and markets.</span></button>
-      <button data-a="12" data-b="14" data-hub="AI Factory|+ lakehouse"><b>2026 &nbsp;·&nbsp; Lakehouse and AI Factory</b><span>Centre: one harmonised data foundation and a shared model platform, with AI leaders embedded in markets. Both costs collapse at once.</span></button>
-    </div>
-
-    <div id="meterWrap">
-      <h2>Resulting structure</h2>
-      <div id="meter"><div id="knob"></div></div>
-      <div id="meterEnds"><span>Centralised</span><span>Decentralised</span></div>
-      <div id="stability"></div>
-    </div>
+<div id="stage"></div>
+<div id="canvasStage">
+  <div id="cvWrap"><canvas id="cv"></canvas><div class="legend" id="legend"></div></div>
+  <div id="cvDaft"></div>
 </div>
 
-<footer>
-  Illustrative model, not a measurement. The four moments are real P&amp;G restructurings; the slider positions are a reading of them, not published figures. Built to make one argument visible: contingency theory prices centralisation against decentralisation, and says nothing about where a firm lands once both prices fall at once.
-</footer>
+<div class="panel">
+  <div class="facts" id="facts"></div>
+  <div class="ctl a">
+    <label for="s1">Pull toward global scale</label>
+    <p class="hint">How much is designed once and used everywhere: one brand strategy, one process, one model.</p>
+    <input type="range" id="s1" min="0" max="100" value="25">
+    <div class="ends"><span>Weak</span><span>Dominant</span></div>
+  </div>
+  <div class="ctl b">
+    <label for="s2">Pull toward local relevance</label>
+    <p class="hint">How much is decided in the market: pricing, pack, channel, and who carries the profit.</p>
+    <input type="range" id="s2" min="0" max="100" value="85">
+    <div class="ends"><span>Weak</span><span>Dominant</span></div>
+  </div>
+  <div id="meterWrap">
+    <h2>Resulting structure</h2>
+    <div id="meter"><div id="knob"></div></div>
+    <div id="mEnds"><span>Centralised</span><span>Decentralised</span></div>
+    <div id="stab"></div>
+  </div>
+</div>
+
+<footer id="foot"></footer>
 
 <script>
 (function(){
-  const cv = document.getElementById('cv');
-  const ctx = cv.getContext('2d');
-  const s1 = document.getElementById('s1');
-  const s2 = document.getElementById('s2');
-  const knob = document.getElementById('knob');
-  const stability = document.getElementById('stability');
-  const vTitle = document.getElementById('vTitle');
-  const vBody = document.getElementById('vBody');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const C='c', D='d', N='n';
+const ERAS=[
+{
+ yr:'Before 1998',
+ buys:['Local relevance, answered market by market','Scale, speed, and the same work done six times'], pos:[85,22,'Multidomestic'], nm:'Country led', hub:['Corporate','centre'],
+ centre:['Corporate centre','oversight, not operations'],
+ product:{label:'Product: category teams sitting inside each country', lead:false,
+   items:['Fabric','Beauty','Baby','Health','Grooming']},
+ geo:{label:'Geography: national profit centres', lead:true, pnl:'Profit sits here',
+   items:['USA','Germany','Japan','India','Brazil','Philippines']},
+ platform:null, ai:null, layers:'13', integ:'Hierarchy and country management',
+ scale:25, local:85,
+ markets:[{s:'USA',t:'n'},{s:'Germany',t:'n'},{s:'Japan',t:'n'},{s:'India',t:'n'},{s:'Brazil',t:'n'},{s:'Philippines',t:'n'}],
+ links:{peer:false, split:false, note:'No shared services and no market tiers yet. Each country runs its own P&amp;L, so there is nothing joining them sideways.'},
+ dims:{cen:22, form:40, spec:35, lay:13},
+ note:'Organised country by country, each national organisation carrying its own profit. Local relevance is answered well and scale is answered badly, because the same product work is repeated in every market and an innovation takes years to reach the world.',
+ daft:[['Divisional grouping, by geography',D],['Decentralised decision rights',D],['Tall hierarchy, 13 layers',N],['Narrow span of control',N],['Weak integration, work duplicated',D]],
+ reading:'Daft would call this <b>divisional grouping by geography</b>. It buys local responsiveness and pays for it in <b>duplication</b>: differentiation without integration.'
+},
+{
+ yr:'1999 to 2018',
+ changed:[['Profit responsibility','National organisations','Global Business Units'],['Management layers','13','7'],['A new unit appears','None','Global Business Services'],['Geography becomes','Profit centres','Go to market only']], pos:[40,85,'Global'], nm:'Organization 2005 and after', hub:['Corporate','Functions'],
+ centre:['Corporate Functions','governance, stewardship and mastery'],
+ product:{label:'Product: Global Business Units, worldwide profit responsibility', lead:true,
+   pnl:'Profit moves here', items:['Fabric &amp; Home','Beauty','Baby','Health','Grooming','Family']},
+ geo:{label:'Geography: Market Development, later Selling and Market Operations', lead:false,
+   items:['North America','Europe','Greater China','Latin America','AMA','IMEA']},
+ platform:'Global Business Services: process work done once for everyone',
+ ai:null, layers:'13 to 7', integ:'Standardised process, shared services and culture',
+ scale:85, local:40,
+ markets:[{s:'N. America',t:'n'},{s:'Europe',t:'n'},{s:'Greater China',t:'n'},{s:'Latin America',t:'n'},{s:'AMA',t:'n'},{s:'IMEA',t:'n'}],
+ links:{peer:true, split:false, note:'Global Business Services now joins the regions sideways, so the same process is not rebuilt six times.'},
+ dims:{cen:78, form:80, spec:72, lay:7},
+ note:'Profit responsibility is lifted off the countries and given to global product units, and a shared service arm is created so process work happens once. Scale rises sharply, local latitude falls. Reporting from the period describes significant disruption in 1999 and 2000, after which the pace was moderated and this architecture was kept.',
+ daft:[['Regrouped to divisional, by product',C],['Matrix, two lines of authority',N],['Vertical delayering, 13 to 7',N],['Shared services as an integrating mechanism',C],['High differentiation, rebuilt integration',C]],
+ reading:'The grouping logic is <b>switched from geography to product</b>, and an integrating mechanism is built alongside it. Daft: raising differentiation without matching integration produces exactly the friction reported in 1999 and 2000.'
+},
+{
+ yr:'July 2019',
+ changed:[['Product axis','Global Business Units','Five Sector Business Units'],['Markets treated','One way for all','Focus and Enterprise, differently'],['Corporate centre','Full corporate functions','A very small corporate group'],['Decision rights','Held at the centre','End to end, inside the units']], pos:[68,82,'Glocal, or transnational'], nm:'Sector Business Units', hub:['Small corporate','group'],
+ centre:['A very small corporate group','best in class functional expertise'],
+ product:{label:'Product: five Sector Business Units, ten product categories', lead:true,
+   pnl:'Profit, Focus markets',
+   items:['Beauty','Grooming','Health Care','Fabric &amp; Home','Baby, Fem &amp; Family']},
+ geo:{label:'Geography: two buckets, treated differently on purpose', lead:false, split:true,
+   pnl:'Profit, Enterprise',
+   items:['Focus Markets, run directly by the SBUs','Enterprise Markets, own profit and freedom to react']},
+ platform:'Global Business Services: scaled services under both axes',
+ ai:null, layers:'7', integ:'End to end decision rights, thin centre, culture',
+ scale:82, local:68,
+ markets:[{s:'N. America',t:'f'},{s:'Europe',t:'f'},{s:'Greater China',t:'f'},{s:'Japan',t:'f'},{s:'India',t:'e'},{s:'LatAm',t:'e'}],
+ links:{peer:true, split:true, note:'Two kinds of line now exist. Focus markets carry direct profit lines. Enterprise markets receive innovation plans, supply plans and operating frameworks instead.'},
+ dims:{cen:55, form:62, spec:82, lay:7},
+ note:'Both pulls rise at once. The product axis keeps worldwide brand strategy and takes full end to end decision rights in the Focus markets, so scale does not fall. At the same time the Enterprise markets become a separate unit with their own profit and the freedom to react quickly, and the corporate centre is deliberately shrunk.',
+ daft:[['Product dominant hybrid',N],['Contingency fit, applied unit by unit',N],['Decentralised decision rights',D],['Thin centre, small corporate group',D],['Differentiated by market tier',D]],
+ reading:'The real move is <b>contingency logic applied inside one firm</b>. Focus and Enterprise markets face different environments, so they are deliberately given different structures rather than one design for everyone.'
+},
+{
+ yr:'2026',
+ changed:[['Number of axes','Two','Three, the platform joins'],['Data','Split by function','One harmonised lakehouse'],['Analytical capability','At the centre','Regional leaders inside markets'],['Planner roles','Transactional','Broader, exception handling']], pos:[88,92,'Transnational, pushed further'], nm:'Lakehouse and AI Factory', hub:['AI Factory','+ lakehouse'],
+ centre:['AI Factory, added on top of the small corporate group','one platform: models built, tested and governed'],
+ product:{label:'Product: five Sector Business Units', lead:true, pnl:'Profit, Focus markets',
+   items:['Beauty','Grooming','Health Care','Fabric &amp; Home','Baby, Fem &amp; Family']},
+ geo:{label:'Geography: Enterprise markets automated first, Focus markets protected', lead:false, split:true,
+   pnl:'Profit, Enterprise',
+   items:['Focus Markets, left manual, more at stake','Enterprise Markets, where THANOS ran']},
+ platform:'Global Business Services and one harmonised data lakehouse under everything',
+ ai:'THIRD AXIS: AI Factory at the centre, global domain leaders, then regional AI leaders embedded inside local business teams',
+ layers:'7, and roles get broader', integ:'Common data, standard models, embedded capability',
+ scale:92, local:88,
+ markets:[{s:'N. America',t:'f'},{s:'Europe',t:'f'},{s:'Greater China',t:'f'},{s:'Japan',t:'f'},{s:'India',t:'e'},{s:'LatAm',t:'e'}],
+ links:{peer:true, split:true, ai:true, note:'A third kind of line appears. The platform reaches every market at once, which is why the structure no longer settles.'},
+ dims:{cen:60, form:70, spec:88, lay:7},
+ note:'A third axis arrives. One platform builds and governs the models, and the people who tune them sit inside the markets. Standardising is now nearly free and so is local adaptation, so the two pulls stop trading off against each other and the structure has no obvious resting shape.',
+ daft:[['A third axis, the platform',C],['Common data, standard models everywhere',C],['Full time integrator roles',N],['Capability embedded at the edge',D],['Broader, more organic roles',D],['The centralisation trade off stops binding',N]],
+ reading:'Common data centralises while embedded capability decentralises. Daft treats <b>centralisation as a contingency variable</b>, but that assumes the two are substitutes, and here they are not.'
+}];
 
-  const MARKETS = [
-    {label:'India',         short:'India'},
-    {label:'Greater China', short:'China'},
-    {label:'Europe',        short:'Europe'},
-    {label:'North America', short:'N. America'},
-    {label:'Latin America', short:'LatAm'},
-    {label:'Japan',         short:'Japan'}
-  ];
-  let W=0,H=0,cx=0,cy=0,R=0;
-  let nodes = [];
+const DIMS=[
+ {k:'cen', n:'Centralisation', lo:'Decisions in the market', hi:'Decisions at the centre'},
+ {k:'form',n:'Formalisation',  lo:'Little written down',      hi:'Rules and standards everywhere'},
+ {k:'spec',n:'Specialisation', lo:'Broad, blended roles',     hi:'Sharply divided work'},
+ {k:'lay', n:'Vertical layers',lo:'Flat',                     hi:'Tall'}
+];
 
-  function resize(){
-    const r = cv.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    cv.width = r.width*dpr; cv.height = r.height*dpr;
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    W=r.width; H=r.height; cx=W/2; cy=H/2;
-    R = Math.min(W,H)*0.30;
-    if(!nodes.length) init();
-  }
+const stage=document.getElementById('stage'), tl=document.getElementById('timeline'),
+      facts=document.getElementById('facts'), s1=document.getElementById('s1'),
+      s2=document.getElementById('s2'), knob=document.getElementById('knob'),
+      stab=document.getElementById('stab'), cvDaft=document.getElementById('cvDaft'),
+      legend=document.getElementById('legend'), foot=document.getElementById('foot');
+let cur=0;
 
-  function init(){
-    nodes = MARKETS.map((m,i)=>{
-      const a = (i/MARKETS.length)*Math.PI*2 - Math.PI/2;
-      return {label:m.label, short:m.short, ang:a, r:R, vr:0, jitter:0};
+foot.innerHTML='Sources: P&amp;G Form 10-K, Organizational Structure (FY2025, FY2026); P&amp;G Annual Reports 2021 to 2025, Organization; us.pg.com corporate structure disclosures; contemporary press reporting on the 1998 to 2005 reorganization; R. L. Daft, Organization Theory and Design, 13th ed.';
+
+ERAS.forEach((e,i)=>{
+  const b=document.createElement('button');
+  b.className='era'; b.innerHTML='<span class="yr">'+e.yr+'</span><span class="nm">'+e.nm+'</span>';
+  b.onclick=()=>{cur=i; s1.value=e.scale; s2.value=e.local; render(); meter();};
+  tl.appendChild(b);
+});
+
+const ticks=n=>{let o='';for(let i=0;i<n;i++)o+='<i></i>';return o;};
+const linkTo=n=>'<div class="link"><div class="stem"></div><div class="bus">'+ticks(n)+'</div></div>';
+const xlinkTo=n=>'<div class="xlink">'+ticks(n)+'</div>';
+
+function row(c){
+  if(!c) return '';
+  let h='<div class="band"><div class="bandlabel">'+c.label+'</div>';
+  if(c.pnl) h+='<div class="pnl'+(c.split?' amber':'')+'">'+c.pnl+'</div>';
+  h+='<div class="row">';
+  c.items.forEach((t,i)=>{
+    const cls=c.split?(i===1?'box amber':'box lead'):(c.lead?'box lead':'box ghost');
+    h+='<div class="'+cls+'" style="animation-delay:'+(i*34)+'ms">'+t+'</div>';
+  });
+  return h+'</div></div>';
+}
+
+function dimsBlock(e,prev){
+  let h='<div class="dims">';
+  DIMS.forEach(d=>{
+    const raw=e.dims[d.k], pRaw=prev?prev.dims[d.k]:null;
+    const pct = d.k==='lay' ? (raw/16)*100 : raw;
+    const pPct= pRaw==null?null:(d.k==='lay'?(pRaw/16)*100:pRaw);
+    const val = raw>=60 ? d.hi : d.lo;
+    const dir = pRaw==null?0:raw-pRaw;
+    // decentralising direction is orange for centralisation only
+    const orange = (d.k==='cen' && raw<50) || (d.k==='lay' && raw<8 && dir<0);
+    let delta='';
+    if(dir>0) delta='<span style="color:var(--blue)">&#9650; Increased</span>';
+    else if(dir<0) delta='<span style="color:var(--warn)">&#9660; Decreased</span>';
+    else if(pRaw!=null) delta='<span style="color:var(--muted)">No change</span>';
+    h+='<div class="dim"><div class="dn">'+d.n+'</div><div class="dv">'+val+'</div>'+
+       '<div class="track"><div class="fill'+(orange?' d':'')+'" style="width:'+pct+'%"></div>'+
+       (pPct==null?'':'<div class="prev" style="left:'+pPct+'%"></div>')+'</div>'+
+       '<div class="delta">'+delta+'</div></div>';
+  });
+  return h+'</div>';
+}
+
+function midBlock(e,prev){
+  let L='<div class="card chg"><div class="bandlabel">'+(prev?'What changed from '+prev.yr:'What this design buys, and what it costs')+'</div>';
+  if(e.changed){
+    e.changed.forEach((r,i)=>{
+      L+='<div class="chgrow" style="animation-delay:'+(i*50)+'ms"><span class="cl">'+r[0]+
+         '</span><span class="cf">'+r[1]+'</span><span class="ar">&#8594;</span><span class="ct">'+r[2]+'</span></div>';
     });
+  } else {
+    L+='<div class="buys"><b>It buys:</b> '+e.buys[0]+'</div><div class="buys"><i>It costs:</i> '+e.buys[1]+'</div>';
   }
+  L+='</div>';
+  const p=e.pos;
+  let Rt='<div class="card pos"><div class="bandlabel">Where this sits internationally</div>'+
+    '<div class="quadwrap"><span class="axl y">Global integration</span>'+
+    '<div class="quad"><div>Global</div><div>Glocal</div><div>International</div><div>Multidomestic</div>'+
+    '<div class="dot" style="left:'+p[0]+'%;bottom:'+p[1]+'%"></div></div></div>'+
+    '<div class="axl" style="text-align:center;padding-left:14px">Local responsiveness</div>'+
+    '<div class="posname">'+p[2]+'</div></div>';
+  return '<div class="mid">'+L+Rt+'</div>';
+}
+function daftBlock(e,hot){
+  let h='<div class="daft"><div class="bandlabel">Organisation design: what Daft calls this</div><div class="tags">';
+  e.daft.forEach((t,i)=>{h+='<span class="tag '+t[1]+'" style="animation-delay:'+(i*40)+'ms">'+t[0]+'</span>';});
+  h+='</div><div class="key"><b class="c">Blue</b> pulls the organisation toward the centre. '+
+     '<b class="d">Orange</b> pushes it out to the markets. Grey is structural, pulling neither way.</div>';
+  return h+'<div class="reading">'+e.reading+'</div></div>';
+}
 
-  function readForces(){
-    // sliders are COST (0 = free). Force strength is inverse of cost.
-    const central = 1 - (s1.value/100);   // cheap standardisation -> pull inward
-    const local   = 1 - (s2.value/100);   // cheap local capability -> push outward
-    return {central, local};
+function render(){
+  const e=ERAS[cur], prev=cur>0?ERAS[cur-1]:null, hot=(cur===ERAS.length-1);
+  [...tl.children].forEach((b,i)=>{b.classList.toggle('on',i===cur);b.classList.toggle('hot',i===cur&&hot);});
+  let h='<div class="centre">'+e.centre[0]+'<small>'+e.centre[1]+'</small></div>';
+  h+=linkTo(e.product.items.length)+row(e.product);
+  h+=xlinkTo(e.geo.items.length)+row(e.geo);
+  if(e.platform) h+='<div style="height:5px"></div><div class="platform">'+e.platform+'</div>';
+  if(e.ai) h+='<div style="height:4px"></div><div class="ailayer">'+e.ai+'</div>';
+  h+=dimsBlock(e,prev);
+  h+='<div class="note'+(hot?' hot':'')+'">'+e.note+'</div>';
+  h+=midBlock(e,prev);
+  h+=daftBlock(e,hot);
+  stage.innerHTML=h;
+  cvDaft.innerHTML=daftBlock(e,hot);
+
+  let lg='';
+  if(e.links.split){
+    lg+='<div><s></s>Focus market: the SBUs hold the profit directly</div>'+
+        '<div><s class="d"></s>Enterprise market: own profit, receives frameworks</div>';
+  } else {
+    lg+='<div><s></s>Every market reports the same way</div>';
   }
+  if(e.links.peer) lg+='<div><s class="p"></s>Shared services joining the markets sideways</div>';
+  else lg+='<div style="color:var(--warn)">No sideways link: nothing joins the markets</div>';
+  legend.innerHTML=lg;
 
-  function describe(c,l){
-    const both = c>0.6 && l>0.6;
-    const neither = c<0.4 && l<0.4;
-    if(both) return {
-      t:'No stable form',
-      b:'Both costs have collapsed, so standardisation and local capability are no longer substitutes. The structure is pulled hard in both directions at once and does not settle. Contingency theory does not say what happens here.',
-      s:'Unstable — the structure oscillates', col:'var(--warn)'};
-    if(neither) return {
-      t:'The trade-off binds',
-      b:'Both are expensive, so the firm has to choose. This is the world contingency theory was written for, and the choice is genuine.',
-      s:'Stable — a real choice must be made', col:'var(--muted)'};
-    if(c>=l) return {
-      t:'Pulls centralised',
-      b:'Standardising is cheap relative to building local capability, so authority migrates to the common model and the centre.',
-      s:'Stable — settles toward the centre', col:'var(--blue)'};
-    return {
-      t:'Pulls decentralised',
-      b:'Local capability is cheap relative to standardising, so decisions stay near the market and the centre thins out.',
-      s:'Stable — settles toward the edge', col:'var(--warn)'};
-  }
+  facts.innerHTML=
+   '<div class="fact"><b>Profit sits with</b><span>'+(e.product.lead?'The product axis':'The countries')+'</span></div>'+
+   '<div class="fact"><b>Management layers</b><span>'+e.layers+'</span></div>'+
+   '<div class="fact"><b>Held together by</b><span>'+e.integ+'</span></div>';
+}
 
-  let t=0;
-  function frame(){
-    t += 0.016;
-    const {central, local} = readForces();
-    const conflict = Math.min(central, local);          // both strong -> high conflict
-    const targetR  = R*(0.42 + 0.72*(local - central)/2 + 0.30);
+function meter(){
+  const sc=s1.value/100, lo=s2.value/100;
+  const conflict=Math.max(0,(Math.min(sc,lo)-0.80)/0.20);
+  let pos=50+(lo-sc)*50;
+  if(conflict>0) pos+=Math.sin(Date.now()/140)*9*conflict;
+  knob.style.left=Math.max(2,Math.min(98,pos))+'%';
+  if(conflict>0.15){stab.textContent='No resting shape, both pulls dominant';stab.style.color='var(--warn)';}
+  else if(sc<0.4&&lo<0.4){stab.textContent='The trade off binds, a real choice';stab.style.color='var(--muted)';}
+  else if(sc>lo+0.08){stab.textContent='Settles toward the centre';stab.style.color='var(--blue)';}
+  else if(lo>sc+0.08){stab.textContent='Settles toward the market';stab.style.color='var(--warn)';}
+  else{stab.textContent='Balanced, the hybrid holds';stab.style.color='var(--muted)';}
+}
+s1.oninput=s2.oninput=meter;
 
-    ctx.clearRect(0,0,W,H);
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,cx=0,cy=0,R=0,nodes=[],t=0,running=false,builtFor=-1;
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // links
-    nodes.forEach(n=>{
-      // spring toward target radius
-      const wobble = reduce ? 0 : Math.sin(t*2.4 + n.ang*3)*conflict*R*0.16;
-      const goal = Math.max(R*0.34, Math.min(R*1.30, targetR + wobble));
-      n.vr += (goal - n.r)*0.06;
-      n.vr *= 0.82;
-      n.r  += n.vr;
-      if(!reduce) n.ang += 0.0006*(local-central);
-    });
+function build(){
+  const M=ERAS[cur].markets;
+  nodes=M.map((m,i)=>({s:m.s,t:m.t,ang:(i/M.length)*Math.PI*2-Math.PI/2,r:R||120,vr:0}));
+  builtFor=cur;
+}
+function resize(){
+  const r=cv.getBoundingClientRect(); if(!r.width||!r.height) return;
+  const d=window.devicePixelRatio||1;
+  cv.width=r.width*d; cv.height=r.height*d; ctx.setTransform(d,0,0,d,0,0);
+  W=r.width;H=r.height;cx=W/2;cy=H/2;R=Math.min(W,H)*0.31;
+  if(!nodes.length) build();
+}
+function fit(txt,max,w,start){let f=start;ctx.font=w+' '+f+'px "Segoe UI",system-ui,Tahoma,Arial,sans-serif';
+  while(ctx.measureText(txt).width>max&&f>8){f-=.5;ctx.font=w+' '+f+'px "Segoe UI",system-ui,Tahoma,Arial,sans-serif';}return f;}
+const P=n=>({x:cx+Math.cos(n.ang)*n.r, y:cy+Math.sin(n.ang)*n.r});
 
-    nodes.forEach(n=>{
-      const x = cx + Math.cos(n.ang)*n.r;
-      const y = cy + Math.sin(n.ang)*n.r;
-      ctx.beginPath();
-      ctx.moveTo(cx,cy); ctx.lineTo(x,y);
-      ctx.strokeStyle = 'rgba(27,109,224,'+(0.18+central*0.62)+')';
-      ctx.lineWidth = 1 + central*3.4;
-      if(local>0.55 && central<0.55){ ctx.setLineDash([5,5]); } else { ctx.setLineDash([]); }
-      ctx.stroke();
-      ctx.setLineDash([]);
-    });
+function frame(){
+  if(!running) return;
+  t+=0.016; resize();
+  if(!W){requestAnimationFrame(frame);return;}
+  if(builtFor!==cur) build();
+  const e=ERAS[cur], sc=s1.value/100, lo=s2.value/100;
+  const conflict=Math.max(0,(Math.min(sc,lo)-0.80)/0.20);
+  const target=R*(0.74+0.66*(lo-sc)/2);
+  ctx.clearRect(0,0,W,H);
 
-    // market nodes
-    nodes.forEach(n=>{
-      const x = cx + Math.cos(n.ang)*n.r;
-      const y = cy + Math.sin(n.ang)*n.r;
-      const rad = 33;
-      ctx.beginPath(); ctx.arc(x,y,rad,0,Math.PI*2);
-      ctx.fillStyle = local>0.5 ? '#1B6DE0' : '#FFFFFF';
-      ctx.fill();
-      ctx.lineWidth = 2.2; ctx.strokeStyle = '#1B6DE0'; ctx.stroke();
-      const short = n.short || n.label;
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillStyle = local>0.5 ? '#fff' : '#16181D';
-      // shrink the label until it fits inside this circle, whatever its current radius
-      const maxW = rad * 1.62;
-      let fs = 12;
-      ctx.font = '600 ' + fs + 'px "Segoe UI",system-ui,sans-serif';
-      while(ctx.measureText(short).width > maxW && fs > 9){
-        fs -= 0.5;
-        ctx.font = '600 ' + fs + 'px "Segoe UI",system-ui,sans-serif';
-      }
-      ctx.fillText(short, x, y);
-    });
-
-    // centre — what sat at the middle changes with the era
-    const cr = 53;
-    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2);
-    ctx.fillStyle = '#16181D'; ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    const hubMax = cr * 1.55;
-    const longest = HUB.reduce((a,b)=> a.length>b.length ? a : b, '');
-    let hf = 12;
-    ctx.font = '700 ' + hf + 'px "Segoe UI",system-ui,sans-serif';
-    while(ctx.measureText(longest).width > hubMax && hf > 9){
-      hf -= 0.5;
-      ctx.font = '700 ' + hf + 'px "Segoe UI",system-ui,sans-serif';
-    }
-    if(HUB.length === 1){
-      ctx.fillText(HUB[0], cx, cy);
-    } else {
-      ctx.fillText(HUB[0], cx, cy - hf*0.58);
-      ctx.fillText(HUB[1], cx, cy + hf*0.58);
-    }
-
-    requestAnimationFrame(frame);
-  }
-
-  function update(){
-    const {central, local} = readForces();
-    const d = describe(central, local);
-    vTitle.textContent = d.t;
-    vBody.textContent = d.b;
-    stability.textContent = d.s;
-    stability.style.color = d.col;
-    document.getElementById('verdict').style.borderLeftColor = d.col;
-
-    // knob: 0% centralised .. 100% decentralised
-    let pos = 50 + (local-central)*50;
-    if(central>0.6 && local>0.6 && !reduce){ pos += Math.sin(Date.now()/140)*9; }
-    knob.style.left = Math.max(2,Math.min(98,pos)) + '%';
-
-    document.querySelectorAll('.presets button').forEach(b=>{
-      b.classList.toggle('on', b.dataset.a===s1.value && b.dataset.b===s2.value);
-    });
-  }
-
-  let HUB = ['The','centre'];
-
-  s1.addEventListener('input',()=>{ HUB=['The','centre']; update(); });
-  s2.addEventListener('input',()=>{ HUB=['The','centre']; update(); });
-  document.querySelectorAll('.presets button').forEach(b=>{
-    b.addEventListener('click',()=>{
-      s1.value = b.dataset.a; s2.value = b.dataset.b;
-      HUB = (b.dataset.hub || 'The|centre').split('|');
-      update();
-    });
+  nodes.forEach(n=>{
+    const wob=reduce?0:Math.sin(t*2.5+n.ang*3)*conflict*R*0.20;
+    const goal=Math.max(R*0.36,Math.min(R*1.32,target+wob));
+    n.vr+=(goal-n.r)*0.06; n.vr*=0.82; n.r+=n.vr;
+    if(!reduce) n.ang+=0.0006*(lo-sc);
   });
 
-  window.addEventListener('resize',()=>{ resize(); init(); });
-  resize(); update(); frame();
-  setInterval(update, 90); // keeps the knob jittering while unstable
+  if(e.links.peer){
+    ctx.strokeStyle='rgba(27,109,224,'+(0.10+sc*0.40)+')'; ctx.lineWidth=1+sc*1.5;
+    const ring = e.links.split ? nodes.filter(n=>n.t==='f') : nodes;
+    for(let i=0;i<ring.length;i++){
+      const a=P(ring[i]), b=P(ring[(i+1)%ring.length]);
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    }
+  }
+  if(e.links.split){
+    ctx.setLineDash([6,5]); ctx.strokeStyle='rgba(194,65,12,'+(0.32+lo*0.45)+')'; ctx.lineWidth=1.8;
+    nodes.filter(n=>n.t==='e').forEach(n=>{const a=P(n);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(a.x,a.y);ctx.stroke();});
+    ctx.setLineDash([]);
+  }
+  if(e.links.ai){
+    ctx.setLineDash([2,4]); ctx.strokeStyle='rgba(27,109,224,.55)'; ctx.lineWidth=1.2;
+    for(let i=0;i<nodes.length;i++){
+      const a=P(nodes[i]), b=P(nodes[(i+1)%nodes.length]);
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+  const direct = e.links.split ? nodes.filter(n=>n.t==='f') : nodes;
+  ctx.strokeStyle='rgba(27,109,224,'+(0.20+sc*0.62)+')';
+  direct.forEach(n=>{const a=P(n);ctx.lineWidth=1.2+sc*3.2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(a.x,a.y);ctx.stroke();});
+
+  nodes.forEach(n=>{
+    const p=P(n), rad=33, ent=n.t==='e';
+    const col = ent ? '#C2410C' : (e.links.split ? '#1B6DE0' : (sc>lo ? '#1B6DE0' : '#C2410C'));
+    const filled = ent ? lo>0.5 : sc>0.5;
+    ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,Math.PI*2);
+    ctx.fillStyle= filled?col:'#FFFFFF'; ctx.fill();
+    ctx.lineWidth=2.2; ctx.strokeStyle=col; ctx.stroke();
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle= filled?'#fff':'#16181D';
+    fit(n.s,rad*1.62,'600',12); ctx.fillText(n.s,p.x,p.y);
+  });
+
+  const L=e.hub, cr=53;
+  ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fillStyle='#16181D'; ctx.fill();
+  ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const hf=fit(L.reduce((a,b)=>a.length>b.length?a:b,''),cr*1.55,'700',12);
+  ctx.fillText(L[0],cx,cy-hf*0.58); ctx.fillText(L[1],cx,cy+hf*0.58);
+  requestAnimationFrame(frame);
+}
+function setView(p){
+  document.body.classList.toggle('pulls',p);
+  document.getElementById('vChart').classList.toggle('on',!p);
+  document.getElementById('vPulls').classList.toggle('on',p);
+  running=p;
+  if(p){nodes=[];requestAnimationFrame(()=>{resize();requestAnimationFrame(frame);});}
+}
+document.getElementById('vChart').onclick=()=>setView(false);
+document.getElementById('vPulls').onclick=()=>setView(true);
+window.addEventListener('resize',()=>{nodes=[];resize();});
+
+render(); meter(); setInterval(meter,90);
 })();
 </script>
 </body>
